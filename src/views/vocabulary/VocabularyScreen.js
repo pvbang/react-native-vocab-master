@@ -1,46 +1,46 @@
 import { Text, View, TouchableOpacity } from 'react-native';
-import React, { useState }  from 'react';
-// import Voice from '@react-native-voice/voice';
-
+import React, { useState } from 'react';
 import styles from './styles';
+import strings from '../../constants/string';
 
 const VocabularyScreen = props => {
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [isVoice, setIsVoice] = useState(false);
+  const sourceText = 'Hello, world!';
+  const targetLanguage = 'vi';
+  const apiUrl = `https://translation.googleapis.com/language/translate/v2?key=${strings.GOOGLE_API_KEY}`;
 
-  // Voice.onSpeechStart = () => setIsVoice(true);
-  // Voice.onSpeechEnd = () => setIsVoice(false);
-  // Voice.onSpeechError = err => setError(err.error);
-  // Voice.onSpeechResults = result => setResult(result.value[0]);
-
-  const startVoice = async () => {
-    try {
-      // await Voice.start('en-US');
-    } catch (err) {
-      setError(err);
-    }
+  const translation = async () => {
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        q: sourceText,
+        target: targetLanguage,
+      }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        const translatedText = data.data.translations[0].translatedText;
+        console.log(translatedText);
+      })
+      .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+      });
   }
 
-  const stopVoice = async () => {
-    try {
-      // await Voice.stop();
-    } catch (err) {
-      setError(err);
-    }
-  }
+  translation();
 
   return (
-    <View>
+    <View style={styles.container}>
       <Text>VocabularyScreen</Text>
 
-      <Text>{result}</Text>
-      <Text>{error}</Text>
-      <Text>{isVoice}</Text>
-      {/* onPress={isVoice ? startVoice : stopVoice} */}
-      <TouchableOpacity >
-        <Text>{isVoice ? 'Stop' : 'Start'}</Text>
-      </TouchableOpacity>
+
     </View>
   );
 };

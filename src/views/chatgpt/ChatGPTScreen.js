@@ -4,11 +4,11 @@ import { GiftedChat, Send, Bubble } from 'react-native-gifted-chat';
 
 import styles from './styles';
 import colors from '../../constants/colors';
+import strings from '../../constants/string';
 
 const logo = require('../../images/chatgpt.png');
 
 const API_URL = 'https://api.openai.com/v1/completions';
-const YOUR_API_KEY = 'sk- cSaOqaaSh54S3kJMjop2T3BlbkFJ XONL43RgaWnlvbzIznrD';  // xóa mấy dấu cách đi
 const MAX_TOKENS = 1000;
 
 const ChatGPTScreen = props => {
@@ -48,7 +48,7 @@ const ChatGPTScreen = props => {
       headers: {
         'Content-Type': 'application/json',
         Authorization:
-          `Bearer ${YOUR_API_KEY}`,
+          `Bearer ${strings.OPEN_AI_KEY}`,
       },
       body: JSON.stringify({
         model: 'text-davinci-003',

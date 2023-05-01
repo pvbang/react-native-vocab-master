@@ -4,9 +4,7 @@ import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 
 import styles from './styles';
 import colors from '../../constants/colors';
-
-// Vision API - Google Cloud
-const API_KEY = 'AIzaSyDb- XByamfmrrOx8Jb_ HpxtSNjz4xlJiSg';    // xóa mấy dấu cách đi
+import strings from '../../constants/string';
 
 const CameraScreen = props => {
   const [image, setImage] = useState(null);
@@ -117,7 +115,7 @@ const CameraScreen = props => {
     setOtherVocabulary(null);
     setlengthOfDetectedObject(null);
 
-    let googleVisionRes = await fetch('https://vision.googleapis.com/v1/images:annotate?key='.concat(API_KEY),
+    let googleVisionRes = await fetch('https://vision.googleapis.com/v1/images:annotate?key='.concat(strings.GOOGLE_API_KEY),
       {
         method: 'POST',
         body: JSON.stringify({

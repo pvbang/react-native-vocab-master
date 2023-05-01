@@ -15,6 +15,7 @@ const colors = {
   white_absolute: '#f0eded99',
 
   gray_white: '#f0eded',
+  gray_dark: '#808080',
   background_loading: '#2BB45A',
   text_loading: '#16B5EA',
 

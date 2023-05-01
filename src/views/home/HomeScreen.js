@@ -6,7 +6,7 @@ import colors from '../../constants/colors';
 export default function HomeScreen({navigation}) {
     return (
         <View style={styles.container}>
-            <StatusBar animated={true} backgroundColor = {colors.white} barStyle='light-content' />
+            <StatusBar animated={true} backgroundColor = {colors.white} barStyle='dark-content' />
 
             <View style={styles.bottom}>
                 <View style={styles.center}>
