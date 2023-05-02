@@ -12,49 +12,94 @@ const MeaningScreen = props => {
     const route = useRoute();
     const [isLoading, setIsLoading] = useState(true);
 
-    const [word, setWord] = useState([]);               // từ vựng
-    const [phonetic, setPhonetic] = useState(null);       // ngữ âm
-    const [audio, setAudio] = useState(null);             // audio
-    const [partOfSpeech, setPartOfSpeech] = useState([]);   // noun, v, adj,...
-    const [definition, setDefinition] = useState([]);       // định nghĩa
-    const [example, setExample] = useState([]);         // ví dụ
-    const [synonyms, setSynonyms] = useState([]);       // từ đồng nghĩa
-    const [antonyms, setAntonyms] = useState([]);       // từ trái nghĩa
-    const [urlWiki, setUrlWiki] = useState(null);         // url wiktionary
+    const [word, setWord] = useState([]);                   // từ vựng
+    const [phonetic, setPhonetic] = useState(null);         // ngữ âm
+    const [audio, setAudio] = useState(null);               // audio
+    const [partOfSpeech, setPartOfSpeech] = useState(null);     // noun
+    const [partOfSpeech2, setPartOfSpeech2] = useState(null);   // verb
+    const [partOfSpeech3, setPartOfSpeech3] = useState(null);   // adj
+    const [definition, setDefinition] = useState(null);         // định nghĩa
+    const [definition2, setDefinition2] = useState(null);
+    const [definition3, setDefinition3] = useState(null);
+    const [example, setExample] = useState(null);           // ví dụ
+    const [synonyms, setSynonyms] = useState([]);           // từ đồng nghĩa
+    const [antonyms, setAntonyms] = useState([]);           // từ trái nghĩa
+    const [urlWiki, setUrlWiki] = useState(null);           // url wiktionary
 
+    // dịch sang tiếng việt
     const [wordVN, setWordVN] = useState(null);
     const [partOfSpeechVN, setPartOfSpeechVN] = useState(null);
+    const [partOfSpeechVN2, setPartOfSpeechVN2] = useState(null);
+    const [partOfSpeechVN3, setPartOfSpeechVN3] = useState(null);
     const [definitionVN, setDefinitionVN] = useState(null);
+    const [definitionVN2, setDefinitionVN2] = useState(null);
+    const [definitionVN3, setDefinitionVN3] = useState(null);
     const [exampleVN, setExampleVN] = useState(null);
 
     useEffect(() => {
         setWord(route.params.data);
     }, []);
 
+    useEffect(() => {
+        getData();
+    }, [word]);
+
     const getData = async () => {
         if (isLoading == true) {
             try {
-                axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+                await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
                     .then(res => {
                         setIsLoading(false);
-                        console.log(res.data);
-                        translation(word, "word");
+                        // console.log(res.data);
 
+                        // word
+                        translation(word).then(translatedText => {
+                            setWordVN(translatedText);
+                        }).catch(error => { console.log(error); });
+
+                        // phonetic
                         setPhonetic(res.data[0].phonetic);
+
+                        // audio
                         try {
                             setAudio(res.data[0].phonetics[0].audio);
                         } catch (e1) {
                             console.log(e1);
                         }
+
                         try {
+
+                            // partOfSpeech
                             setPartOfSpeech(res.data[0].meanings[0].partOfSpeech);
-                            translation(res.data[0].meanings[0].partOfSpeech, "partOfSpeech");
+                            translation(res.data[0].meanings[0].partOfSpeech).then(translatedText => {
+                                setPartOfSpeechVN(translatedText.charAt(0).toUpperCase() + translatedText.slice(1).toLowerCase());
+                            }).catch(error => { console.log(error); });
 
+                            // definition
                             setDefinition(res.data[0].meanings[0].definitions[0].definition);
-                            translation(res.data[0].meanings[0].definitions[0].definition, "definition");
+                            translation(res.data[0].meanings[0].definitions[0].definition).then(translatedText => {
+                                setDefinitionVN(translatedText);
+                            }).catch(error => { console.log(error); });
 
+                            // meanings 2, 3
+                            if (res.data[0].meanings.length == 2) {
+                                setPartOfSpeech2(res.data[0].meanings[1].partOfSpeech);
+                                translation(res.data[0].meanings[1].partOfSpeech).then(translatedText => {
+                                    setPartOfSpeechVN2(translatedText.charAt(0).toUpperCase() + translatedText.slice(1).toLowerCase());
+                                    console.log(translatedText);
+                                }).catch(error => { console.log(error); });
+
+                                setDefinition2(res.data[0].meanings[1].definitions[0].definition);
+                                translation(res.data[0].meanings[1].definitions[0].definition).then(translatedText => {
+                                    setDefinitionVN2(translatedText);
+                                }).catch(error => { console.log(error); });
+                            }
+
+                            // example
                             setExample(res.data[0].meanings[0].definitions[0].example);
-                            translation(res.data[0].meanings[0].definitions[0].example, "example");
+                            translation(res.data[0].meanings[0].definitions[0].example).then(translatedText => {
+                                setExampleVN(translatedText);
+                            }).catch(error => { console.log(error); });
 
                             setSynonyms(res.data[0].meanings[0].synonyms);
                             setAntonyms(res.data[0].meanings[0].antonyms);
@@ -67,7 +112,7 @@ const MeaningScreen = props => {
                     })
                     .catch(error => console.log(error));
             } catch (e) {
-                console.log(e)
+                console.log(e);
             }
 
         }
@@ -83,44 +128,30 @@ const MeaningScreen = props => {
         }
     }
 
-    const translation = (text, type) => {
-        fetch(`https://translation.googleapis.com/language/translate/v2?key=${strings.GOOGLE_API_KEY}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                q: text,
-                target: 'vi',
-            }),
-        })
-            .then(response => {
-                return response.json();
+    const translation = (text) => {
+        return new Promise((resolve, reject) => {
+            fetch(`https://translation.googleapis.com/language/translate/v2?key=${strings.GOOGLE_API_KEY}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    q: text,
+                    target: 'vi',
+                }),
             })
-            .then(data => {
-                const translatedText = data.data.translations[0].translatedText;
-                if (type == "word") {
-                    setWordVN(translatedText);
-                    console.log(wordVN);
-                } else if (type == "partOfSpeech") {
-                    setPartOfSpeechVN(translatedText);
-                    console.log(partOfSpeechVN);
-                } else if (type == "definition") {
-                    setDefinitionVN(translatedText);
-                } else if (type == "example") {
-                    setExampleVN(translatedText);
-                } else {
-                    console.log(type);
-                    console.log(translatedText);
-                }
-            })
-            .catch(error => {
-                console.log('There was a problem with the fetch operation:', error);
-            });
-    }
+                .then(response => response.json())
+                .then(data => {
+                    const translatedText = data.data.translations[0].translatedText;
+                    resolve(translatedText);
+                })
+                .catch(error => {
+                    reject(error);
+                });
+        });
+    };
 
-    getData();
-    // console.log(synonyms);
+    // getData();
 
     return (
         <View style={styles.container}>
@@ -152,12 +183,16 @@ const MeaningScreen = props => {
                         )}
                     </View>
 
-                    <View style={styles.row2}>
-                        <Image source={require('../../images/deduce.png')} style={styles.imageRow2} />
-                        <Text style={styles.textContentGreenBold}>{wordVN}</Text>
-                    </View>
+                    {wordVN && (
+                        <View style={styles.row2}>
+                            <Image source={require('../../images/deduce.png')} style={styles.imageRow2} />
+                            <Text style={styles.textContentGreenBold}>{wordVN}</Text>
+                        </View>
+                    )}
 
-                    <Text style={styles.textContentBlackBold}>{partOfSpeechVN} ({partOfSpeech})</Text>
+                    {partOfSpeechVN && (
+                        <Text style={styles.textContentBlackBold}>{partOfSpeechVN} ({partOfSpeech})</Text>
+                    )}
 
                     {definition && (
                         <Text style={styles.textContentBlack}>{definition}</Text>
@@ -166,6 +201,20 @@ const MeaningScreen = props => {
                         <View style={styles.row2}>
                             <Image source={require('../../images/deduce.png')} style={styles.imageRow2} />
                             <Text style={styles.textContentGreen}>{definitionVN}</Text>
+                        </View>
+                    )}
+
+                    {partOfSpeechVN2 && (
+                        <Text style={styles.textContentBlackBold}>{partOfSpeechVN2} ({partOfSpeech2})</Text>
+                    )}
+
+                    {definition2 && (
+                        <Text style={styles.textContentBlack}>{definition2}</Text>
+                    )}
+                    {definition2 && (
+                        <View style={styles.row2}>
+                            <Image source={require('../../images/deduce.png')} style={styles.imageRow2} />
+                            <Text style={styles.textContentGreen}>{definitionVN2}</Text>
                         </View>
                     )}
 
@@ -198,9 +247,11 @@ const MeaningScreen = props => {
                         return <Text key={index} style={styles.textContentGreen}>{item}</Text>
                     })}
 
-                    <View style={styles.marginTop10}>
-                        <Text style={styles.textContentBlackBold}>Website: {urlWiki}</Text>
-                    </View>
+                    {urlWiki && (
+                        <View style={styles.marginTop10}>
+                            <Text style={styles.textContentBlackBold}>Website: {urlWiki}</Text>
+                        </View>
+                    )}
 
                 </ScrollView>
             </View>

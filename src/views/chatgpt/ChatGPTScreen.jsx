@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, SafeAreaView, Image, TouchableOpacity } from 'react-native';
+import { View, SafeAreaView, Image, TouchableOpacity, LogBox } from 'react-native';
 import { GiftedChat, Send, Bubble } from 'react-native-gifted-chat';
+import Voice from '@react-native-voice/voice';
 
 import styles from './styles';
 import colors from '../../constants/colors';
@@ -11,11 +12,22 @@ const logo = require('../../images/chatgpt.png');
 const API_URL = 'https://api.openai.com/v1/completions';
 const MAX_TOKENS = 1000;
 
+LogBox.ignoreLogs(['`new NativeEventEmitter()` was called with a non-null argument without the required `addListener` method.', '`new NativeEventEmitter()` was called with a non-null argument without the required `removeListeners` method.']);
+
 const ChatGPTScreen = props => {
   const [messages, setMessages] = useState([]);
+  const [isVoice, setIsVoice] = useState(false);
+  const [voiceText, setVoiceText] = useState(null);
 
   useEffect(() => {
     firstMessage();
+
+    Voice.onSpeechStart = speechStartHandler;
+    Voice.onSpeechEnd = speechEndHandler;
+    Voice.onSpeechResults = speechResultsHandler;
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
   }, []);
 
   const firstMessage = () => {
@@ -81,6 +93,42 @@ const ChatGPTScreen = props => {
     setMessages(previousMessages => GiftedChat.append(previousMessages, value));
   };
 
+  const speechStartHandler = e => {
+    console.log('start record', e);
+  };
+  const speechEndHandler = e => {
+    setIsVoice(false);
+    console.log('stop record', e);
+  };
+  const speechResultsHandler = e => {
+    const text = e.value[0];
+    setVoiceText(text);
+  };
+  const startRecording = async () => {
+    try {
+      await Voice.start('en-Us');
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+  const stopRecording = async () => {
+    try {
+      await Voice.stop();
+      setIsVoice(false);
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+
+  const voice = () => {
+    setIsVoice(!isVoice);
+    if (!isVoice == true) {
+      startRecording();
+    } else if (!isVoice == false) {
+      stopRecording();
+    }
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity style={styles.back}
@@ -97,12 +145,16 @@ const ChatGPTScreen = props => {
             <Send {...props}>
               <View style={styles.row}>
                 <View style={styles.voiceView}>
-                  <TouchableOpacity onPress={() => console.log('Custom button pressed')}>
-                    <Image source={require('../../images/voice.png')} resizeMode={'center'} style={styles.image}/>
+                  <TouchableOpacity onPress={() => voice()}>
+                    {isVoice ? (
+                      <Image source={require('../../images/voice-stop.png')} resizeMode={'center'} style={styles.image} />
+                    ) : (
+                      <Image source={require('../../images/voice.png')} resizeMode={'center'} style={styles.image} />
+                    )}
                   </TouchableOpacity>
                 </View>
                 <View style={styles.sendView}>
-                  <Image source={require('../../images/send.png')} resizeMode={'center'} style={styles.image}/>
+                    <Image source={require('../../images/send.png')} resizeMode={'center'} style={styles.image} />
                 </View>
               </View>
             </Send>
@@ -120,12 +172,18 @@ const ChatGPTScreen = props => {
             />
           );
         }}
+        text={voiceText}
         messages={messages}
         alwaysShowSend={true}
         placeholder='Nhập tin nhắn của bạn...'
         dateFormat='DD/MM/YYYY'
         textInputStyle={styles.textInputStyle}
-        onSend={messages => onSend(messages)}
+        onSend={messages => {
+          onSend(messages); 
+          console.log(voiceText);
+          setVoiceText(null);
+        }}
+        onInputTextChanged={text => setVoiceText(text)}
         user={{
           _id: 1,
         }}

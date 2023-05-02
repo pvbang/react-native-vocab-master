@@ -4,7 +4,7 @@ import styles from './styles';
 
 const ExercisesScreen = () => {
   return (
-    <View>
+    <View style={styles.container}>
       <Text>ExercisesScreen</Text>
     </View>
   );
