@@ -1,6 +1,6 @@
 const strings = {
-    GOOGLE_API_KEY: 'AIzaSyDb-XByamfmrrOx8Jb_HpxtSNjz4xlJiSg',
-    OPEN_AI_KEY: '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',
+    // GOOGLE_API_KEY: 'AIzaSyDLj0iPsxyG9EDNAMTZ-MX_CD5jkZc4gN0',
+    OPEN_AI_KEY: 'sk-AaxpvesrdNWAM9w50F'+'yZT3BlbkFJeBf5Ruc9mzNaU785sN9C',
 
 };
 
