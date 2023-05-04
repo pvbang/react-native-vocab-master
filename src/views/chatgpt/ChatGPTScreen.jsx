@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, SafeAreaView, Image, TouchableOpacity, LogBox } from 'react-native';
+import { View, SafeAreaView, Image, TouchableOpacity, LogBox, StatusBar } from 'react-native';
 import { GiftedChat, Send, Bubble } from 'react-native-gifted-chat';
 import Voice from '@react-native-voice/voice';
 
@@ -131,6 +131,7 @@ const ChatGPTScreen = props => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar animated={true} backgroundColor={colors.white} barStyle='dark-content' />
       <TouchableOpacity style={styles.back}
         onPress={() => {
           props.navigation.goBack();

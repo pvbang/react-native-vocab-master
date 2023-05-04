@@ -248,7 +248,7 @@ const MeaningScreen = props => {
                     })}
 
                     {urlWiki && (
-                        <View style={styles.marginTop10}>
+                        <View style={styles.marginVertical10}>
                             <Text style={styles.textContentBlackBold}>Website: {urlWiki}</Text>
                         </View>
                     )}

@@ -246,6 +246,8 @@ const CameraScreen = props => {
 
   return (
     <View style={styles.container}>
+      <StatusBar animated={true} backgroundColor={colors.white} barStyle='dark-content' />
+
       <TouchableOpacity style={styles.back}
         onPress={() => {
           props.navigation.goBack();

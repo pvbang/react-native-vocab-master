@@ -1,100 +1,35 @@
-// import { Text, View, TouchableOpacity } from 'react-native';
-// import React, { useState } from 'react';
-// import styles from './styles';
-// import strings from '../../constants/string';
-
-// const VocabularyScreen = props => {
-//   const sourceText = 'Hello, world!';
-//   const targetLanguage = 'vi';
-//   const apiUrl = `https://translation.googleapis.com/language/translate/v2?key=${strings.GOOGLE_API_KEY}`;
-
-//   const translation = async () => {
-//     fetch(apiUrl, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({
-//         q: sourceText,
-//         target: targetLanguage,
-//       }),
-//     })
-//       .then(response => {
-//         if (!response.ok) {
-//           throw new Error('Network response was not ok');
-//         }
-//         return response.json();
-//       })
-//       .then(data => {
-//         const translatedText = data.data.translations[0].translatedText;
-//         console.log(translatedText);
-//       })
-//       .catch(error => {
-//         console.error('There was a problem with the fetch operation:', error);
-//       });
-//   }
-
-//   translation();
-
-//   return (
-//     <View style={styles.container}>
-//       <Text>VocabularyScreen</Text>
-
-
-//     </View>
-//   );
-// };
-
-// export default VocabularyScreen;
-
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  LogBox
-} from 'react-native';
+import { Text, View, ScrollView, RefreshControl, TouchableOpacity, Image, StatusBar, TextInput, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import Voice from '@react-native-voice/voice';
 
-LogBox.ignoreLogs(['`new NativeEventEmitter()` was called with a non-null argument without the required `addListener` method.', '`new NativeEventEmitter()` was called with a non-null argument without the required `removeListeners` method.']);
+import styles from './styles';
+import colors from '../../constants/colors';
+import wordlist from '../../constants/wordlist.json';
 
-const App = () => {
-  const [result, setResult] = useState('');
-  const [isLoading, setLoading] = useState(false);
-  const speechStartHandler = e => {
-    console.log('speechStart successful', e);
+const VocabularyScreen = props => {
+  // gộp mảng lại và loại bỏ mấy cái từ bị trùng
+  const words = [...new Set([...wordlist.adjective, ...wordlist.adverb, ...wordlist.verb, ...wordlist.noun])];
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState(words);
+  const [showResults, setShowResults] = useState(false);
+
+  const [isVoice, setIsVoice] = useState(false);
+
+  const filterData = (value) => {
+    const filteredData = words.filter((item) =>
+      item.toLowerCase().includes(value.toString().toLowerCase())
+    );
+    setSearchResults(filteredData);
+    setShowResults(true);
   };
-  const speechEndHandler = e => {
-    setLoading(false);
-    console.log('stop handler', e);
-  };
-  const speechResultsHandler = e => {
-    const text = e.value[0];
-    setResult(text);
-  };
-  const startRecording = async () => {
-    setLoading(true);
-    try {
-      await Voice.start('en-Us');
-    } catch (error) {
-      console.log('error', error);
-    }
-  };
-  const stopRecording = async () => {
-    try {
-      await Voice.stop();
-      setLoading(false);
-    } catch (error) {
-      console.log('error', error);
-    }
-  };
-  const clear = () => {
-    setResult('');
-  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults(words);
+    setShowResults(false);  // Ẩn danh sách kết quả tìm kiếm
+  }
+
   useEffect(() => {
     Voice.onSpeechStart = speechStartHandler;
     Voice.onSpeechEnd = speechEndHandler;
@@ -104,99 +39,109 @@ const App = () => {
     };
   }, []);
 
+  const speechStartHandler = e => {
+    console.log('start record', e);
+  };
+  const speechEndHandler = e => {
+    setIsVoice(false);
+    console.log('stop record', e);
+  };
+  const speechResultsHandler = e => {
+    const text = e.value[0];
+    setSearchQuery(text);
+  };
+  const startRecording = async () => {
+    try {
+      await Voice.start('en-Us');
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+  const stopRecording = async () => {
+    try {
+      await Voice.stop();
+      setIsVoice(false);
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+
+  const voice = () => {
+    setIsVoice(!isVoice);
+    if (!isVoice == true) {
+      startRecording();
+    } else if (!isVoice == false) {
+      stopRecording();
+    }
+  }
+
   return (
     <View style={styles.container}>
-      <SafeAreaView>
-        <Text style={styles.headingText}>Voice to Text Recognition</Text>
-        <View style={styles.textInputStyle}>
+      <StatusBar animated={true} backgroundColor={colors.primary} barStyle='light-content' />
+
+      <View style={styles.top}>
+        <TouchableOpacity style={styles.back}
+          onPress={() => {
+            props.navigation.goBack();
+          }}
+        >
+          <Image source={require('../../images/back_white.png')} style={styles.backImg} />
+        </TouchableOpacity>
+        <Text style={styles.textTop}>Từ vựng</Text>
+      </View>
+
+      <View style={styles.content}>
+        <View style={styles.searchView}>
+          <Image source={require('../../images/search.png')} style={styles.imgSearch} />
           <TextInput
-            value={result}
-            multiline={true}
-            placeholder="say something!"
-            style={{
-              flex: 1,
-              height: '100%',
+            style={styles.search}
+            placeholder="Tìm kiếm từ vựng"
+            value={searchQuery}
+            onChangeText={(text) => {
+              setSearchQuery(text);
+              filterData(text);
             }}
-            onChangeText={text => setResult(text)}
           />
-        </View>
-        <View style={styles.btnContainer}>
-          {isLoading ? (
-            <ActivityIndicator size="large" color="black" />
-          ) : (
-            <TouchableOpacity onPress={startRecording} style={styles.speak}>
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>Speak</Text>
+          {showResults && (
+            <TouchableOpacity onPress={clearSearch}>
+              <Image source={require('../../images/reject.png')} style={styles.imgReject} />
             </TouchableOpacity>
           )}
-          <TouchableOpacity style={styles.stop} onPress={stopRecording}>
-            <Text style={{ color: 'white', fontWeight: 'bold' }}>Stop</Text>
+
+          <TouchableOpacity onPress={() => voice()}>
+            {isVoice ? (
+              <Image source={require('../../images/voice-stop.png')} resizeMode={'center'} style={styles.imgVoice} />
+            ) : (
+              <Image source={require('../../images/voice.png')} resizeMode={'center'} style={styles.imgVoice} />
+            )}
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.clear} onPress={clear}>
-          <Text style={{ color: 'white', fontWeight: 'bold' }}>Clear</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
+        <View style={styles.resultsView}>
+          <FlatList
+            data={searchResults}
+            renderItem={({ item }) =>
+              <View>
+                <TouchableOpacity onPress={() =>
+                  props.navigation.navigate('Meaning', {
+                    data: item,
+                  })
+                }>
+                  <View style={styles.viewTextResults}>
+                    <Image source={require('../../images/search.png')} style={styles.imgSearch} />
+                    <Text style={styles.textResults}>{item}</Text>
+                    <Image source={require('../../images/top-left.png')} style={styles.imgTopLeft} />
+                  </View>
+                </TouchableOpacity>
+                <View style={styles.hr}></View>
+              </View>
+            }
+            keyExtractor={(item) => item.toString()}
+            style={styles.searchResults}
+          />
+        </View>
+      </View>
     </View>
   );
 };
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 24,
-  },
-  headingText: {
-    alignSelf: 'center',
-    marginVertical: 26,
-    fontWeight: 'bold',
-    fontSize: 26,
-  },
-  textInputStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    height: 300,
-    borderRadius: 20,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 2,
-    elevation: 2,
-    shadowOpacity: 0.4,
-    color: '#000',
-  },
-  speak: {
-    backgroundColor: 'black',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-    borderRadius: 8,
-  },
-  stop: {
-    backgroundColor: 'red',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-    borderRadius: 8,
-  },
-  clear: {
-    backgroundColor: 'black',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 15,
-  },
-  btnContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    with: '50%',
-    justifyContent: 'space-evenly',
-    marginTop: 24,
-  },
-});
-export default App;
+
+export default VocabularyScreen;

@@ -30,7 +30,8 @@ const styles = StyleSheet.create({
     },
 
     scrollView: {
-        margin: 15,
+        backgroundColor: colors.white,
+        padding: 15,
     },
 
     top: {
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
 
     textContentBlackBold: {
         color: colors.primary_black,
-        fontSize: 17,
+        fontSize: 18,
         fontWeight: 'bold',
         marginEnd: 10,
     },
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
     },
 
     row2: {
-        // backgroundColor: 'red',
+        paddingEnd: 15,
         flexDirection: 'row', 
         marginBottom: 10,
     },
@@ -101,7 +102,10 @@ const styles = StyleSheet.create({
 
     marginTop10: {
         marginTop: 10
-    }
+    },
+    marginVertical10: {
+        marginVertical: 10,
+    },
 
 });
 

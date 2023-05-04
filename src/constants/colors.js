@@ -16,6 +16,7 @@ const colors = {
 
   gray_white: '#f0eded',
   gray_dark: '#808080',
+  gray_search: '#f5f5f5',
   background_loading: '#2BB45A',
   text_loading: '#16B5EA',
 
