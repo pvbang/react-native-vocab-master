@@ -74,7 +74,7 @@ const TranslateScreen = (props) => {
             placeholder="Nhập từ hoặc câu mà bạn muốn dịch"
             value={textTranslate}
             multiline={true}
-            numberOfLines={6}
+            numberOfLines={1}
             onChangeText={(text) => {
               setTextTranslate(text);
 
@@ -95,7 +95,7 @@ const TranslateScreen = (props) => {
             style={styles.translateInput}
             value={result}
             multiline={true}
-            numberOfLines={6}
+            numberOfLines={1}
           />
         </View>
       </View>

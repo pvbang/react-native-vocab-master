@@ -160,48 +160,6 @@ const styles = StyleSheet.create({
         width: 50
     },
 
-    midView: {
-        // backgroundColor: colors.black,
-        margin: 20,
-    },
-    flatView: {
-        backgroundColor: colors.primary,
-        width: '100%',
-        height: 130,
-        borderRadius: 10,
-        borderWidth: 2,
-        borderColor: colors.green2,
-        marginBottom: 15
-    },
-    flatText: {
-        marginHorizontal: 30,
-        marginTop: 20,
-        color: colors.white,
-        fontSize: 16,
-    },
-    flatText2: {
-        marginStart: 30,
-        position: 'absolute',
-        bottom: 27,
-        color: colors.white,
-        fontSize: 20,
-        fontWeight: 'bold'
-    },
-
-    flatButtonView: {
-        backgroundColor: colors.white,
-        position: 'absolute',
-        right: 30,
-        bottom: 20,
-        paddingHorizontal: 25,
-        paddingVertical: 8,
-        borderRadius: 100
-    },
-    flatButtonText: {
-        color: colors.primary,
-        fontSize: 16,
-        fontWeight: 'bold'
-    }
 
 
 });

@@ -49,6 +49,8 @@ const VocabularyScreen = props => {
   const speechResultsHandler = e => {
     const text = e.value[0];
     setSearchQuery(text);
+    filterData(text);
+    console.log(text);
   };
   const startRecording = async () => {
     try {

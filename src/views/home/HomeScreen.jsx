@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Image, StatusBar, TextInput, FlatList } from 'react-native';
+import { Text, View, TouchableOpacity, Image, StatusBar, TextInput, FlatList, ScrollView } from 'react-native';
 import Voice from '@react-native-voice/voice';
 
 import styles from './styles';
 import colors from '../../constants/colors';
 import wordlist from '../../constants/wordlist.json';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = props => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -45,11 +47,14 @@ const HomeScreen = props => {
     };
     const speechEndHandler = e => {
         setIsVoice(false);
+        stopRecording();
         console.log('stop record', e);
     };
     const speechResultsHandler = e => {
         const text = e.value[0];
         setSearchQuery(text);
+        filterData(text);
+        console.log(text);
     };
     const startRecording = async () => {
         try {
@@ -76,6 +81,21 @@ const HomeScreen = props => {
         }
     }
 
+    const user = async () => {
+        try {
+            const id = await AsyncStorage.getItem('@id_user')
+
+            if (id != null) {
+                props.navigation.navigate('User');
+            } else {
+                props.navigation.navigate('Login')
+            }
+
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     return (
         <View style={styles.container}>
             <StatusBar animated={true} backgroundColor={colors.primary} barStyle='light-content' />
@@ -84,7 +104,7 @@ const HomeScreen = props => {
                 <Text style={styles.textTop}>Vocab Master</Text>
                 <TouchableOpacity style={styles.back}
                     onPress={() => {
-                        console.log("user");
+                        user();
                     }}
                 >
                     <Image source={require('../../images/user.png')} style={styles.backImg} />
@@ -143,6 +163,62 @@ const HomeScreen = props => {
                         />
                     </View>
                 )}
+
+                <ScrollView style={styles.midView} showsVerticalScrollIndicator={false}>
+                    <View style={styles.flatView}>
+                        <Text style={styles.flatText}>Nhận diện từ vựng bằng hình ảnh</Text>
+                        <Text style={styles.flatText2}>Camera AI</Text>
+
+                        <TouchableOpacity style={styles.flatButtonView} onPress={() => props.navigation.navigate('CameraAI')}>
+                            <Text style={styles.flatButtonText}>Khám phá</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.flatView}>
+                        <Text style={styles.flatText}>Trò chuyện cùng với AI để cải thiện khả năng giao tiếp</Text>
+                        <Text style={styles.flatText2}>Chat AI</Text>
+
+                        <TouchableOpacity style={styles.flatButtonView} onPress={() => props.navigation.navigate('ChatGPT')}>
+                            <Text style={styles.flatButtonText}>Khám phá</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.flatView}>
+                        <Text style={styles.flatText}>Dịch đoạn văn, từ vựng</Text>
+                        <Text style={styles.flatText2}>Translate</Text>
+
+                        <TouchableOpacity style={styles.flatButtonView} onPress={() => props.navigation.navigate('Translate')}>
+                            <Text style={styles.flatButtonText}>Khám phá</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.flatView}>
+                        <Text style={styles.flatText}>Các từ vựng đã được đánh dấu</Text>
+                        <Text style={styles.flatText2}>Bookmark</Text>
+
+                        <TouchableOpacity style={styles.flatButtonView} onPress={() => props.navigation.navigate('Bookmark')}>
+                            <Text style={styles.flatButtonText}>Khám phá</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.flatView}>
+                        <Text style={styles.flatText}>Danh sách các từ vựng</Text>
+                        <Text style={styles.flatText2}>Từ vựng</Text>
+
+                        <TouchableOpacity style={styles.flatButtonView} onPress={() => props.navigation.navigate('Vocabulary')}>
+                            <Text style={styles.flatButtonText}>Khám phá</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.flatView}>
+                        <Text style={styles.flatText}>Lịch sử tìm kiếm</Text>
+                        <Text style={styles.flatText2}>History</Text>
+
+                        <TouchableOpacity style={styles.flatButtonView} onPress={() => props.navigation.navigate('History')}>
+                            <Text style={styles.flatButtonText}>Khám phá</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
 
                 <View style={styles.bottom}>
                     <View style={styles.center}>

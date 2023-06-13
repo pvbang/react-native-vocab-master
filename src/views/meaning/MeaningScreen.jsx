@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import SoundPlayer from 'react-native-sound-player';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import styles from './styles';
 import colors from '../../constants/colors';
@@ -10,6 +11,9 @@ import strings from '../../constants/string';
 
 const MeaningScreen = props => {
     const route = useRoute();
+    const [id, setID] = useState('');
+    const [bookmark, setBookmark] = useState(false);
+    const [bookmarkID, setBookmarkID] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
     const [word, setWord] = useState([]);                   // từ vựng
@@ -38,11 +42,80 @@ const MeaningScreen = props => {
 
     useEffect(() => {
         setWord(route.params.data);
+        getUser();
     }, []);
 
     useEffect(() => {
         getData();
     }, [word]);
+
+    useEffect(() => {
+        if (!bookmark) {
+            deleteBookmark();
+        }
+    }, [bookmark]);
+
+    const changeBookmark = () => {
+        if (bookmark) {
+            deleteBookmark();
+            setBookmark(false);
+        } else {
+            addBookmark();
+            setBookmark(true);
+        }
+    } 
+
+    const getUser = async () => {
+        try {
+            const id = await AsyncStorage.getItem('@id_user')
+            setID(id);
+
+            axios.get('https://vocab-master-api.000webhostapp.com/api/bookmarks/user/'+id+'/'+route.params.data)
+            .then(function (response) {
+                console.log(response.data.length);
+                console.log(response.data);
+                if (response.data.length != 0) {
+                    setBookmark(true);
+                    setBookmarkID(response.data[0].id)
+                    console.log(response.data[0].id);
+                } else {
+                    setBookmark(false);
+                }
+            })
+            .catch(function (error) {
+                console.log(error.message);
+            });
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    const deleteBookmark = async () => {
+        try {
+            axios.get('https://vocab-master-api.000webhostapp.com/api/bookmarks/delete/'+bookmarkID)
+            .then(function (response) {
+                console.log("delete bookmark");
+            })
+            .catch(function (error) {
+                console.log(error.message);
+            });
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    const addBookmark = () => {
+        axios.post('https://vocab-master-api.000webhostapp.com/api/bookmarks/add', {
+            id_user: id,
+            word: word,
+        })
+            .then(function (response) {
+                setBookmark(true);
+            })
+            .catch(function (error) {
+                console.log(error.message);
+            });
+    }
 
     const getData = async () => {
         if (isLoading == true) {
@@ -92,6 +165,27 @@ const MeaningScreen = props => {
                                 setDefinition2(res.data[0].meanings[1].definitions[0].definition);
                                 translation(res.data[0].meanings[1].definitions[0].definition).then(translatedText => {
                                     setDefinitionVN2(translatedText);
+                                }).catch(error => { console.log(error); });
+                            }
+                            if (res.data[0].meanings.length == 3) {
+                                setPartOfSpeech2(res.data[0].meanings[1].partOfSpeech);
+                                translation(res.data[0].meanings[1].partOfSpeech).then(translatedText => {
+                                    setPartOfSpeechVN2(translatedText.charAt(0).toUpperCase() + translatedText.slice(1).toLowerCase());
+                                    console.log(translatedText);
+                                }).catch(error => { console.log(error); });
+                                setPartOfSpeech3(res.data[0].meanings[2].partOfSpeech);
+                                translation(res.data[0].meanings[2].partOfSpeech).then(translatedText => {
+                                    setPartOfSpeechVN3(translatedText.charAt(0).toUpperCase() + translatedText.slice(1).toLowerCase());
+                                    console.log(translatedText);
+                                }).catch(error => { console.log(error); });
+
+                                setDefinition2(res.data[0].meanings[1].definitions[0].definition);
+                                translation(res.data[0].meanings[1].definitions[0].definition).then(translatedText => {
+                                    setDefinitionVN2(translatedText);
+                                }).catch(error => { console.log(error); });
+                                setDefinition3(res.data[0].meanings[2].definitions[0].definition);
+                                translation(res.data[0].meanings[2].definitions[0].definition).then(translatedText => {
+                                    setDefinitionVN3(translatedText);
                                 }).catch(error => { console.log(error); });
                             }
 
@@ -166,6 +260,12 @@ const MeaningScreen = props => {
                     <Image source={require('../../images/back_white.png')} style={styles.backImg} />
                 </TouchableOpacity>
                 <Text style={styles.textTop}>{word}</Text>
+                <View style={styles.bookmarkView}>
+                    <TouchableOpacity onPress={changeBookmark}>
+                        {bookmark ? <Image source={require('../../images/bookmark-check.png')} style={styles.bookmarkImage} /> : <Image source={require('../../images/bookmark.png')} style={styles.bookmarkImage} />}
+                    </TouchableOpacity>
+                </View>
+
             </View>
 
             <View style={styles.content}>
@@ -218,6 +318,20 @@ const MeaningScreen = props => {
                         </View>
                     )}
 
+                    {partOfSpeechVN3 && (
+                        <Text style={styles.textContentBlackBold}>{partOfSpeechVN3} ({partOfSpeech3})</Text>
+                    )}
+
+                    {definition3 && (
+                        <Text style={styles.textContentBlack}>{definition3}</Text>
+                    )}
+                    {definition3 && (
+                        <View style={styles.row2}>
+                            <Image source={require('../../images/deduce.png')} style={styles.imageRow2} />
+                            <Text style={styles.textContentGreen}>{definitionVN3}</Text>
+                        </View>
+                    )}
+
                     {example && (
                         <Text style={styles.textContentBlackBold}>Ví dụ:</Text>
                     )}
@@ -252,6 +366,8 @@ const MeaningScreen = props => {
                             <Text style={styles.textContentBlackBold}>Website: {urlWiki}</Text>
                         </View>
                     )}
+
+                    <View style={styles.marginVertical10}></View>
 
                 </ScrollView>
             </View>

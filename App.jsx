@@ -15,6 +15,7 @@ const App = () => {
     return <LoadingScreen />;
   }
   return <RootNavigator />;
+  
 }
 
 export default App;

@@ -49,8 +49,8 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
         textAlignVertical: "top",
-        fontSize: 20,
-        color: colors.black
+        fontSize: 19,
+        color: colors.primary
     },
 
     textTrans: {

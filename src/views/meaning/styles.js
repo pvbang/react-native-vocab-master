@@ -29,6 +29,15 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
 
+    bookmarkView: {
+        right: 20,
+        position: 'absolute'
+    },
+    bookmarkImage: {
+        width: 25,
+        height: 25,
+    },
+
     scrollView: {
         backgroundColor: colors.white,
         padding: 15,
